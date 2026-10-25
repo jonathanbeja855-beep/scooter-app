@@ -1,4 +1,5 @@
 [app]
+source.dir = .
 title = Scooter Speed Hack
 package.name = scooterspeed
 package.domain = org.scooter
