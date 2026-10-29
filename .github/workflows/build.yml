@@ -1,29 +1,30 @@
-[app]
-source.dir = .
-title = Scooter Speed Hack
-package.name = scooterspeed
-package.domain = org.scooter
-source.include_exts = py,png,jpg,kv,atlas
-version = 0.2
+name: Build Android APK
 
-# Versions stables qui évitent le bug libthorvg
-requirements = python3,kivy==2.3.0,bleak,pyjnius,android,async-timeout,pillow
+on:
+  push:
+    branches: [ main ]
 
-orientation = portrait
-fullscreen = 0
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: kivy/buildozer
 
-android.permissions = INTERNET,BLUETOOTH,BLUETOOTH_ADMIN,BLUETOOTH_SCAN,BLUETOOTH_CONNECT,ACCESS_FINE_LOCATION,ACCESS_COARSE_LOCATION
+    steps:
+      - uses: actions/checkout@v4
 
-android.api = 33
-android.minapi = 24
-android.ndk = 25b
-android.archs = arm64-v8a
-android.accept_sdk_license = True
+      - name: Fix git ownership
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
-# Important
-p4a.branch = master          # ou develop si master pose problème
-# p4a.local_recipes =          # laisse vide pour l’instant
+      - name: Clean previous builds
+        run: |
+          buildozer android clean || true
+          rm -rf .buildozer
 
-[buildozer]
-log_level = 2
-warn_on_root = 0
+      - name: Build with Buildozer
+        run: yes | buildozer -v android debug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: package
+          path: bin/*.apk
