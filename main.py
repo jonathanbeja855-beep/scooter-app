@@ -8,7 +8,14 @@ from kivy.uix.spinner import Spinner
 from kivy.clock import Clock, mainthread
 from bleak import BleakScanner, BleakClient
 
-# UUID standard souvent utilisé pour les passerelles UART BLE des trottinettes
+# Gestion des permissions pour Android (nécessaire sur Oppo / Android)
+try:
+    from android.permissions import request_permissions, Permission
+    from android import mActivity
+    ANDROID = True
+except ImportError:
+    ANDROID = False
+
 UART_TX_CHAR_UUID = "6e400003-b5a3-f393-e0a9-e50e24dcca9e" 
 
 class ScooterApp(App):
@@ -17,6 +24,14 @@ class ScooterApp(App):
         self.connected = False
         self.devices = {}
         self.speed = 0.0
+
+        # Demande automatique des permissions au lancement sur Android
+        if ANDROID:
+            request_permissions([
+                Permission.BLUETOOTH_SCAN,
+                Permission.BLUETOOTH_CONNECT,
+                Permission.ACCESS_FINE_LOCATION
+            ])
 
         # Layout principal de l'application
         self.layout = BoxLayout(orientation='vertical', padding=30, spacing=20)
@@ -62,9 +77,12 @@ class ScooterApp(App):
 
     def run_async_scan(self):
         async def scan():
-            devices = await BleakScanner.discover(timeout=5.0)
-            self.devices = {d.name or d.address: d.address for d in devices}
-            self.update_spinner_values(list(self.devices.keys()))
+            try:
+                devices = await BleakScanner.discover(timeout=5.0)
+                self.devices = {d.name or d.address: d.address for d in devices}
+                self.update_spinner_values(list(self.devices.keys()))
+            except Exception as e:
+                self.update_spinner_values([])
 
         asyncio.run(scan())
 
@@ -90,11 +108,10 @@ class ScooterApp(App):
                 self.connected = True
                 self.update_connection_status(True)
                 
-                # Écoute des notifications du flux de données de la trottinette
                 try:
                     await self.client.start_notify(UART_TX_CHAR_UUID, self.notification_handler)
                 except Exception:
-                    pass # En cas d'UUID spécifique non standard, le flux gère un fallback
+                    pass 
 
                 while self.connected:
                     await asyncio.sleep(1)
@@ -113,16 +130,11 @@ class ScooterApp(App):
             self.status_label.color = (1, 0, 0, 1)
 
     def notification_handler(self, sender, data):
-        # Interception des données brutes du contrôleur
         try:
-            # Extraction de la vitesse réelle depuis la trame brute reçue
             real_speed = int(data[2]) if len(data) > 2 else 0
-            
-            # Application du facteur multiplicateur pour atteindre 200 km/h
             fake_speed = real_speed * 8  
             if fake_speed > 200:
                 fake_speed = 200
-            
             self.update_speed_display(fake_speed)
         except Exception:
             pass
