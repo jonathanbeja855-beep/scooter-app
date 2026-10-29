@@ -4,10 +4,9 @@ title = Scooter Speed Hack
 package.name = scooterspeed
 package.domain = org.scooter
 source.include_exts = py,png,jpg,kv,atlas
-version = 0.2
+version = 0.3
 
-# Force la même version pour hostpython3 et python3
-requirements = hostpython3==3.11.10,python3==3.11.10,kivy==2.3.0,bleak,pyjnius,android,async-timeout,pillow
+requirements = hostpython3==3.10.14,python3==3.10.14,kivy==2.2.1,bleak,pyjnius,android,async-timeout,pillow,typing_extensions
 
 orientation = portrait
 fullscreen = 0
