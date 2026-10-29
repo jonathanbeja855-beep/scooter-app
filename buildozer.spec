@@ -6,7 +6,8 @@ package.domain = org.scooter
 source.include_exts = py,png,jpg,kv,atlas
 version = 0.2
 
-requirements = python3,kivy==2.3.0,bleak,pyjnius,android,async-timeout,pillow
+# Versions stables + Python 3.11
+requirements = python3==3.11.10,kivy==2.3.0,bleak,pyjnius,android,async-timeout,pillow
 
 orientation = portrait
 fullscreen = 0
@@ -19,6 +20,7 @@ android.ndk = 25b
 android.archs = arm64-v8a
 android.accept_sdk_license = True
 
+# Force une branche stable de p4a
 p4a.branch = master
 
 [buildozer]
