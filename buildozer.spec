@@ -6,7 +6,6 @@ package.domain = org.scooter
 source.include_exts = py,png,jpg,kv,atlas
 version = 0.2
 
-# Versions stables qui évitent le bug libthorvg
 requirements = python3,kivy==2.3.0,bleak,pyjnius,android,async-timeout,pillow
 
 orientation = portrait
@@ -20,9 +19,7 @@ android.ndk = 25b
 android.archs = arm64-v8a
 android.accept_sdk_license = True
 
-# Important
-p4a.branch = master          # ou develop si master pose problème
-# p4a.local_recipes =          # laisse vide pour l’instant
+p4a.branch = master
 
 [buildozer]
 log_level = 2
